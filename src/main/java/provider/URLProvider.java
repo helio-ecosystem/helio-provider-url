@@ -11,7 +11,12 @@ import com.google.gson.JsonObject;
 import helio.blueprints.components.DataProvider;
 
 
-
+/**
+ * This object implements the {@link DataProvider} interface allowing to retrieve data from a URL using any protocol supported by the {@link URL} Java object (http, https, ftp, file) .
+ * This object can be configured with a {@link JsonObject} that contains the mandatory keys 'url' specifying a valid URL that can reference any of the implemented protocols.
+ * @author Andrea Cimmino
+ *
+ */
 public class URLProvider implements DataProvider{
 
 	private static final long serialVersionUID = 1L;
