@@ -1,6 +1,7 @@
 package provider;
 
-import java.io.InputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.URL;
 
 import org.slf4j.Logger;
@@ -8,7 +9,9 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonObject;
 
-import helio.blueprints.components.DataProvider;
+import helio.blueprints.DataProvider;
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.FlowableEmitter;
 
 
 /**
@@ -19,7 +22,6 @@ import helio.blueprints.components.DataProvider;
  */
 public class URLProvider implements DataProvider{
 
-	private static final long serialVersionUID = 1L;
 	private String resourceURL;
 	private Logger logger = LoggerFactory.getLogger(URLProvider.class);
 
@@ -39,15 +41,27 @@ public class URLProvider implements DataProvider{
 		this.resourceURL = resourceURL;
 	}
 
-	public InputStream getData() {
-		InputStream output = null;
+	@Override
+	public void subscribe(@NonNull FlowableEmitter<@NonNull String> emitter) throws Throwable {
+	
 		try {
 			URL urlFile = new URL(resourceURL);
-			output = urlFile.openStream();
+			BufferedReader read = new BufferedReader(new InputStreamReader(urlFile.openStream()));
+			StringBuilder content = new StringBuilder();
+			
+			String contentAux;
+	        while ((contentAux = read.readLine()) != null)
+	        	content.append(contentAux);
+	        read.close();
+	        
+			emitter.onNext(content.toString());
+			emitter.onComplete();
+			read.close();
 		} catch (Exception e) {
 			logger.error(e.toString());
+			emitter.onError(e);
 		}
-		return  output;
+		
 	}
 
 	public void configure(JsonObject configuration) {
@@ -62,4 +76,6 @@ public class URLProvider implements DataProvider{
 			throw new IllegalArgumentException("URLProvider needs to receive json object with the mandatory key 'url'");
 		}
 	}
+
+
 }
